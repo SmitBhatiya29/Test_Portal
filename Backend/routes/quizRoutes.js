@@ -6,6 +6,7 @@ const { authenticateTeacher } = require('../middleware/authMiddleware');
 // Teacher creates quiz
 router.post('/', authenticateTeacher, quizController.createQuiz);
 
-// You can add more quiz-related routes here
+// In routes/quizRoutes.js
+router.get('/my-quizzes', authenticateTeacher, quizController.getTeacherQuizzes);
 
 module.exports = router;

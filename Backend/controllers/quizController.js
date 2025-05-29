@@ -34,7 +34,10 @@ exports.getTeacherQuizzes = async (req, res, next) => {
   try {
     const teacherId = req.teacher._id;
     const quizzes = await Quiz.find({ createdBy: teacherId });
-
+    
+    // Log the data being sent
+    console.log('Sending quizzes:', quizzes);
+    
     res.json({ quizzes });
   } catch (error) {
     next(error);
