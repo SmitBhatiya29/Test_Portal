@@ -9,6 +9,7 @@ const QuizSchema = new mongoose.Schema({
 
   basicDetails: {
     testName: { type: String, required: true },
+    subjectName: { type: String, required: true }, // ✅ New field added here
     description: { type: String },
     language: { type: String, default: 'en' },
     logoOption: { type: String, enum: ['custom', 'app', 'none'], default: 'app' },

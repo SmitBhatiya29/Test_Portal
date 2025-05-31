@@ -36,9 +36,25 @@
       console.log('Edit quiz:', quiz);
     };
 
-    const handleDeleteQuiz = (quizId) => {
-      setQuizzes(quizzes.filter(quiz => quiz.id !== quizId));
-    };
+    const handleDeleteQuiz = async (quizId) => {
+  try {
+    const res = await axios.delete(`http://localhost:5000/api/quizzes/${quizId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // if using JWT
+      },
+    });
+
+    if (res.status === 200) {
+      setQuizzes((prev) => prev.filter((q) => q._id !== quizId));
+    } else {
+      alert(res.data.message || 'Failed to delete quiz');
+    }
+  } catch (err) {
+    console.error('Error deleting quiz:', err);
+    alert(err.response?.data?.message || 'Something went wrong');
+  }
+};
+
 
     const handleCreateQuiz = (formData) => {
       const finalTestData = {

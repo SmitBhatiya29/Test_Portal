@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 const BasicDetailsSection = ({ onNext }) => {
   const [logoOption, setLogoOption] = useState('app');
   const [testName, setTestName] = useState('');
+  const [subjectName, setSubjectName] = useState('');
   const [description, setDescription] = useState('');
   const [language, setLanguage] = useState('en');
 
@@ -12,8 +13,13 @@ const BasicDetailsSection = ({ onNext }) => {
       alert('Please enter a test name');
       return;
     }
+    if (!subjectName.trim()) {
+      alert('Please enter a subject name');
+      return;
+    }
     onNext({
       testName,
+      subjectName,
       description,
       language,
       logoOption
@@ -33,6 +39,19 @@ const BasicDetailsSection = ({ onNext }) => {
             onChange={(e) => setTestName(e.target.value)}
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             placeholder="Enter test name"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Subject Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={subjectName}
+            onChange={(e) => setSubjectName(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            placeholder="Enter subject name"
           />
         </div>
 
