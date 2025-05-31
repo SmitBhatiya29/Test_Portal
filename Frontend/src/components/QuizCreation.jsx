@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import axios from "axios";
 
+
 const QuizCreation = ({ onSave }) => {
   const [questions, setQuestions] = useState([
     { id: 1, text: "", type: "MCQ", options: ["", "", "", ""], correct: [], marks: 1, negativeMarks: 0 }

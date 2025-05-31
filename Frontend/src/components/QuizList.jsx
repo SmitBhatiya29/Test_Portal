@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Plus, Search, Settings2, Edit2, Trash2 } from 'lucide-react';
 
-const QuizList = ({ quizzes, onNewQuiz, onEditQuiz, onDeleteQuiz }) => {
+const QuizList = ({ quizzes = [], onNewQuiz, onEditQuiz, onDeleteQuiz }) => {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -52,8 +52,7 @@ const QuizList = ({ quizzes, onNewQuiz, onEditQuiz, onDeleteQuiz }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {quizzes.map((quiz) => (
-          
-          <div key={quiz.id} className="bg-white p-6 rounded-lg border hover:shadow-lg transition-shadow">
+          <div key={quiz._id || quiz.id} className="bg-white p-6 rounded-lg border hover:shadow-lg transition-shadow">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                 <span className={`px-3 py-1 text-sm rounded-full w-fit ${
@@ -61,10 +60,10 @@ const QuizList = ({ quizzes, onNewQuiz, onEditQuiz, onDeleteQuiz }) => {
                     ? 'bg-emerald-100 text-emerald-700'
                     : 'bg-purple-100 text-purple-700'
                 }`}>
-                  {quiz.status}
+                  {quiz.status || 'DRAFT'}
                 </span>
                 <span className="text-sm text-gray-500">
-                  CREATED: {new Date(quiz.createdAt).toLocaleDateString()}
+                  CREATED: {quiz.createdAt ? new Date(quiz.createdAt).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
               <div className="flex gap-2">
@@ -75,17 +74,23 @@ const QuizList = ({ quizzes, onNewQuiz, onEditQuiz, onDeleteQuiz }) => {
                   <Edit2 size={20} />
                 </button>
                 <button
-                  onClick={() => onDeleteQuiz(quiz.id)}
+                  onClick={() => onDeleteQuiz(quiz._id || quiz.id)}
                   className="text-gray-600 hover:text-red-600 transition-colors"
                 >
                   <Trash2 size={20} />
                 </button>
               </div>
             </div>
-            <h3 className="text-lg font-semibold mb-2">{quiz.basicDetails?.testName}</h3>
-            <p className="text-gray-600 mb-4">{quiz.basicDetails.description || '(no description)'}</p>
+            <h3 className="text-lg font-semibold mb-2">
+              {quiz.basicDetails?.testName || quiz.title || quiz.basicDetails?.title || 'Untitled Quiz'}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {quiz.basicDetails?.description || quiz.description || '(no description)'}
+            </p>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-              <span className="text-sm text-gray-500 uppercase">{quiz.category || 'UNCATEGORIZED'}</span>
+              <span className="text-sm text-gray-500 uppercase">
+                {quiz.category || quiz.basicDetails?.category || 'UNCATEGORIZED'}
+              </span>
               {quiz.status === 'ACTIVE' && (
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-gray-600">50% avg. score</span>
@@ -102,12 +107,19 @@ const QuizList = ({ quizzes, onNewQuiz, onEditQuiz, onDeleteQuiz }) => {
 
 QuizList.propTypes = {
   quizzes: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
+    _id: PropTypes.string,
+    id: PropTypes.string,
+    title: PropTypes.string,
     description: PropTypes.string,
     category: PropTypes.string,
-    status: PropTypes.string.isRequired,
-    createdAt: PropTypes.string.isRequired,
+    status: PropTypes.string,
+    createdAt: PropTypes.string,
+    basicDetails: PropTypes.shape({
+      testName: PropTypes.string,
+      title: PropTypes.string,
+      description: PropTypes.string,
+      category: PropTypes.string
+    })
   })).isRequired,
   onNewQuiz: PropTypes.func.isRequired,
   onEditQuiz: PropTypes.func.isRequired,

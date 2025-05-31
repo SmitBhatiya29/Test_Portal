@@ -7,8 +7,11 @@ import TestAccessSection from './test-config/TestAccessSection';
 import TimeSettingsSection from './test-config/TimeSettingsSection';
 import QuizCreation from './QuizCreation';
 import axios from 'axios';
+import TeacherDashboard from './TeacherDashboard';
 
+import { useNavigate } from 'react-router-dom';
 const TestConfiguration = ({ onBack, onComplete }) => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     basicDetails: null,
@@ -51,13 +54,24 @@ const handleCreate = async (questions) => {
       {
         headers: {
           Authorization: `Bearer ${teacherToken}`
-
         }
       }
     );
     console.log('✅ Quiz created:', response.data);
+    
+    // Call onComplete before navigation
+    if (onComplete) {
+      onComplete(finalTestData);
+    }
+    
+    // Use setTimeout to ensure state updates are processed
+    setTimeout(() => {
+      navigate('/teacher');
+    }, 100);
+
   } catch (error) {
     console.error('❌ Error creating quiz:', error.response?.data || error.message);
+    // You might want to show an error message to the user here
   }
 };
 
