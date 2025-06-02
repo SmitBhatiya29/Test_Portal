@@ -60,7 +60,7 @@ const ResultDatabase = () => {
   }
 
   const dbName = databaseName.trim();
-  const createdBy = "682c421e7c1fa142afd50027"; // Replace with actual logged-in teacher ID if dynamic
+  const createdBy = localStorage.getItem('teacherId') || "682c421e7c1fa142afd50027"; // Replace with actual logged-in teacher ID if dynamic
 
   // Prepare data in required format
   const payload = {

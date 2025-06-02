@@ -45,11 +45,18 @@ const Login = ({ onLogin }) => {
         });
       }
 
-      // Inside handleSubmit function, after successful login
       if (response.status === 200) {
         console.log("Login/Register Success:", response.data);
-        // Store the token
+
+        // Store token
         localStorage.setItem('token', response.data.token);
+
+        // 👇 Store teacherId only if selectedType is teacher
+        if (selectedType === 'teacher') {
+          localStorage.setItem('teacherId', response.data.teacher.id);
+          console.log("Teacher ID stored:", response.data.teacher.id);
+        }
+
         onLogin(selectedType, email, password, response.data);
       } else {
         alert(response.data.message || 'Login/Register failed.');
