@@ -63,10 +63,10 @@ exports.deleteQuiz = async (req, res, next) => {
 
 exports.getStudentQuizzes = async (req, res) => {
   try {
-    const studentId = req.student.id; // assuming this is set via auth middleware
+    const studentId = req.student.id; // ✅ From auth middleware
     console.log("📥 Requested by Student ID:", studentId);
 
-    // Step 1: Find the student
+    // ✅ Step 1: Find the student
     const student = await Student.findById(studentId);
     if (!student) {
       console.log("❌ Student not found for ID:", studentId);
@@ -79,12 +79,12 @@ exports.getStudentQuizzes = async (req, res) => {
       createdBy: student.createdBy,
     });
 
-    // Step 2: Get quizzes created by the teacher who created this student
+    // ✅ Step 2: Find quizzes created by student's teacher
     const quizzes = await Quiz.find({ createdBy: student.createdBy });
 
     console.log(`📊 Quizzes found for teacher ID ${student.createdBy}:`, quizzes.length);
 
-    // Step 3: Send response
+    // ✅ Step 3: Send response
     res.status(200).json(quizzes);
 
   } catch (error) {

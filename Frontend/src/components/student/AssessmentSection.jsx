@@ -1,30 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Calendar, Clock } from 'lucide-react';
 
 const AssessmentSection = () => {
-  const subjects = [
-    {
-      subject: 'Physics',
-      title: 'Quantum Mechanics Mid-Term',
-      date: '2025-01-15',
-      time: '10:00 AM',
-      duration: '2 hours',
-    },
-    {
-      subject: 'Mathematics',
-      title: 'Linear Algebra Final',
-      date: '2025-01-18',
-      time: '2:00 PM',
-      duration: '3 hours',
-    },
-    {
-      subject: 'Computer Science',
-      title: 'Data Structures Quiz',
-      date: '2025-01-20',
-      time: '11:30 AM',
-      duration: '1 hour',
-    },
-  ];
+  const [subjects, setSubjects] = useState([]);
+
+  useEffect(() => {
+    const fetchStudentQuizzes = async () => {
+      try {
+        const token = localStorage.getItem('token');  // get token from localStorage
+        if (!token) {
+          console.error('No token found. Please login first.');
+          return;
+        }
+
+        const res = await axios.get('http://localhost:5000/api/quizzes/student-quizzes', {
+          headers: {
+            Authorization: `Bearer ${token}`,  // send token explicitly in header
+          },
+          // no need for withCredentials unless using cookies
+        });
+
+        const transformedData = res.data.map((quiz) => ({
+          subject: quiz.basicDetails.subjectName,
+          title: quiz.basicDetails.testName,
+          date: quiz.timeSettings.startDate,
+          time: quiz.timeSettings.startTime,
+          duration: `${quiz.timeSettings.durationMinutes} minutes`,
+        }));
+
+        setSubjects(transformedData);
+      } catch (error) {
+        console.error('❌ Error fetching quizzes:', error);
+      }
+    };
+
+    fetchStudentQuizzes();
+  }, []);
 
   return (
     <div className="space-y-6">
