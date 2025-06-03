@@ -16,4 +16,7 @@ router.get('/profile', authenticateTeacher, teacherController.getTeacherProfile)
 // Example protected route
 router.get('/quizzes', authenticateTeacher, require('../controllers/quizController').getTeacherQuizzes);
 
+// Update Teacher Profile
+router.put('/profile', authenticateTeacher, teacherController.updateProfile);
+
 module.exports = router;

@@ -96,3 +96,34 @@ exports.logout = (req, res) => {
   res.clearCookie('token');
   res.json({ message: 'Logged out successfully' });
 };
+
+// Update Teacher Profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const teacherId = req.teacher.id;
+    const { name, email, institute, currentPassword, newPassword } = req.body;
+
+    const teacher = await Teacher.findById(teacherId);
+    if (!teacher) return res.status(404).json({ message: 'Teacher not found' });
+
+    // If user wants to update password
+    if (currentPassword && newPassword) {
+      const isMatch = await bcrypt.compare(currentPassword, teacher.password);
+      if (!isMatch) return res.status(400).json({ message: 'Current password is incorrect' });
+
+      teacher.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    // Update other fields
+    teacher.name = name || teacher.name;
+    teacher.email = email || teacher.email;
+    teacher.institute = institute || teacher.institute;
+
+    await teacher.save();
+
+    res.status(200).json({ message: 'Profile updated successfully' });
+  } catch (error) {
+    console.error('Profile Update Error:', error);
+    res.status(500).json({ message: 'Server error updating profile' });
+  }
+};
