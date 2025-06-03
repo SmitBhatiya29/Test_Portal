@@ -31,13 +31,13 @@
         const data = res.data;
         console.log('Fetched Teacher Profile:', data);
         setFormData({
-          name: data.name || '',
-          email: data.email || '',
+          name: data.teacher.name || '',
+          email: data.teacher.email || '',
           currentPassword: '' ,
           newPassword: '',
           confirmPassword: '',
           role: data.role || 'Teacher',
-          institute: data.institute || '',
+          institute: data.teacher.institute || '',
           profileImage: data.profileImage || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
         });
       } catch (error) {
