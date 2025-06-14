@@ -29,10 +29,13 @@ const AssessmentSection = () => {
           time: quiz.timeSettings.startTime,
           duration: `${quiz.timeSettings.durationMinutes} minutes`,
           id: quiz._id,
+          createdBy: quiz.createdBy,
           questions: quiz.questions.map((q) => ({
+            _id: q._id,
             text: q.text,
             type: q.type,
             options: q.options,
+            correctOption: q.correct
           })),
           guidelines: quiz.guidelines.content,
         }));

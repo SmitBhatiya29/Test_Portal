@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, ChevronLeft, ChevronRight, Flag, Square } from 'lucide-react';
 import QuestionRenderer from './QuestionRenderer';
 import TestStartPopup from './TestStartPopup';
+import axios from 'axios';
 
 const QuizTest = ({ testData, onEndTest }) => {
   const [showStartPopup, setShowStartPopup] = useState(false);
@@ -12,15 +13,15 @@ const QuizTest = ({ testData, onEndTest }) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [showFullScreenWarning, setShowFullScreenWarning] = useState(false);
 
-  // Sample quiz questions for demonstration
+  // Prepare questions
   const sampleQuestions = testData.questions.map((q, index) => ({
-  id: q._id,
-  questionNumber: index + 1,
-  type: q.type,
-  questionText: q.text,
-  options: q.options
-}));
-
+    id: q._id,
+    questionNumber: index + 1,
+    type: q.type,
+    questionText: q.text,
+    options: q.options,
+    correctOption: q.correctOption || '' // optional if available
+  }));
 
   // Convert duration string to seconds
   const getDurationInSeconds = (duration) => {
@@ -66,7 +67,7 @@ const QuizTest = ({ testData, onEndTest }) => {
     let interval;
     if (testStarted && timeRemaining > 0) {
       interval = setInterval(() => {
-        setTimeRemaining(prev => {
+        setTimeRemaining((prev) => {
           if (prev <= 1) {
             handleEndTest();
             return 0;
@@ -94,7 +95,7 @@ const QuizTest = ({ testData, onEndTest }) => {
   };
 
   const handleAnswerChange = (questionId, answer) => {
-    setSelectedAnswers(prev => ({
+    setSelectedAnswers((prev) => ({
       ...prev,
       [questionId]: answer
     }));
@@ -114,7 +115,7 @@ const QuizTest = ({ testData, onEndTest }) => {
 
   const handleMarkForReview = () => {
     const questionId = sampleQuestions[currentQuestionIndex].id;
-    setMarkedForReview(prev => {
+    setMarkedForReview((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(questionId)) {
         newSet.delete(questionId);
@@ -126,11 +127,66 @@ const QuizTest = ({ testData, onEndTest }) => {
   };
 
   const handleEndTest = async () => {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+
+      const token = localStorage.getItem('token');
+
+      const answers = sampleQuestions.map((q) => {
+        const ans = {
+          questionId: q.id,
+          questionText: q.questionText,
+          type: q.type,
+          selectedOption: selectedAnswers[q.id] || '',
+          correctOption: q.correctOption || '',
+          marksAwarded: 0
+        };
+
+        // Log each answer object to debug
+        console.log("Answer Debug:", ans);
+        return ans;
+      });
+
+      const payload = {
+        quizId: testData.id,
+        studentId: localStorage.getItem('studentId'),
+        teacherId: testData.createdBy || testData.teacherId, // Get teacherId from testData
+        answers,
+        totalMarks: 0,
+        totalNegativeMarks: 0
+      };
+
+      // Deep debug
+      console.log("🚀 Submitting Payload >>>", JSON.stringify(payload, null, 2));
+
+      const response = await axios.post(
+        'http://localhost:5000/api/quiz-results/submit',
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log('✅ Quiz result submitted successfully.', response.data);
+      alert('Quiz submitted successfully!');
+    } catch (error) {
+      console.error('❌ Error submitting quiz result:', error);
+
+      // Try to extract more info
+      if (error.response) {
+        console.error("❗ Backend response:", error.response.data);
+      }
+
+      alert('Failed to submit quiz. Please try again.');
+    } finally {
+      setTestStarted(false);
+      onEndTest();
     }
-    setTestStarted(false);
-    onEndTest();
   };
 
   const returnToFullScreen = async () => {
@@ -228,14 +284,16 @@ const QuizTest = ({ testData, onEndTest }) => {
         <div className="w-80 bg-white border-l p-6">
           <h3 className="font-semibold text-gray-800 mb-4">Question Navigation</h3>
           <div className="grid grid-cols-4 gap-2 mb-6">
-            {sampleQuestions.map((_, index) => (
+            {sampleQuestions.map((q, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentQuestionIndex(index)}
                 className={`w-10 h-10 rounded-lg font-semibold text-sm transition-colors ${
                   index === currentQuestionIndex
                     ? 'bg-emerald-600 text-white'
-                    : selectedAnswers[sampleQuestions[index].id]
+                    : markedForReview.has(q.id)
+                    ? 'bg-amber-100 text-amber-700'
+                    : selectedAnswers[q.id]
                     ? 'bg-emerald-100 text-emerald-700'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
@@ -244,7 +302,7 @@ const QuizTest = ({ testData, onEndTest }) => {
               </button>
             ))}
           </div>
-          
+
           {/* Legend */}
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
@@ -254,6 +312,10 @@ const QuizTest = ({ testData, onEndTest }) => {
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-emerald-100 rounded"></div>
               <span className="text-gray-600">Answered</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-amber-100 rounded"></div>
+              <span className="text-gray-600">Marked for Review</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-gray-100 rounded"></div>

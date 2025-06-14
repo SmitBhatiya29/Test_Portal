@@ -48,6 +48,8 @@ const Login = ({ onLogin }) => {
       if (response.status === 200) {
         console.log("Login/Register Success:", response.data);
 
+          
+
         // Store token
         localStorage.setItem('token', response.data.token);
 
@@ -55,6 +57,11 @@ const Login = ({ onLogin }) => {
         if (selectedType === 'teacher') {
           localStorage.setItem('teacherId', response.data.teacher.id);
           console.log("Teacher ID stored:", response.data.teacher.id);
+        }
+        // Store studentId if student
+        if (selectedType === 'student') {
+          localStorage.setItem('studentId', response.data.student.id);
+          console.log("Student ID stored:", response.data.student.id);
         }
 
         onLogin(selectedType, email, password, response.data);
