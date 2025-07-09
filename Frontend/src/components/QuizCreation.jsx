@@ -2,21 +2,19 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import axios from "axios";
 
-
 const QuizCreation = ({ onSave }) => {
   const [questions, setQuestions] = useState([
-    { id: 1, text: "", type: "MCQ", options: ["", "", "", ""], correct: [], marks: 1, negativeMarks: 0 }
+    { id: 1, text: "", type: "MCQ", options: ["", "", "", ""], correct: [], marks: 1, negativeMarks: 0, difficulty: "Easy" }
   ]);
 
   const handleAddQuestion = () => {
     setQuestions([
       ...questions,
-      { id: questions.length + 1, text: "", type: "MCQ", options: ["", "", "", ""], correct: [], marks: 1, negativeMarks: 0 }
+      { id: questions.length + 1, text: "", type: "MCQ", options: ["", "", "", ""], correct: [], marks: 1, negativeMarks: 0, difficulty: "Easy" }
     ]);
   };
 
   const handleCreateTest = () => {
-    // Validate questions
     const isValid = questions.every(q => 
       q.text.trim() !== "" && 
       (q.type === "NAT" ? q.correct.length > 0 : q.options.every(opt => opt.trim() !== ""))
@@ -46,15 +44,22 @@ const QuizCreation = ({ onSave }) => {
     setQuestions(updatedQuestions);
   };
 
-  const handleCorrectAnswer = (qIndex, value, isMulti) => {
+  const handleCorrectAnswer = (qIndex, valueIndex, isMulti) => {
     const updatedQuestions = [...questions];
+    const selectedOption = updatedQuestions[qIndex].options[valueIndex];
+
     if (isMulti) {
-      updatedQuestions[qIndex].correct = updatedQuestions[qIndex].correct.includes(value)
-        ? updatedQuestions[qIndex].correct.filter((v) => v !== value)
-        : [...updatedQuestions[qIndex].correct, value];
+      if (updatedQuestions[qIndex].correct.includes(selectedOption)) {
+        updatedQuestions[qIndex].correct = updatedQuestions[qIndex].correct.filter(
+          (v) => v !== selectedOption
+        );
+      } else {
+        updatedQuestions[qIndex].correct.push(selectedOption);
+      }
     } else {
-      updatedQuestions[qIndex].correct = [value];
+      updatedQuestions[qIndex].correct = [selectedOption];
     }
+
     setQuestions(updatedQuestions);
   };
 
@@ -95,9 +100,9 @@ const QuizCreation = ({ onSave }) => {
                     <div key={oIndex} className="flex items-center gap-3">
                       <input
                         type={q.type === "MCQ" ? "radio" : "checkbox"}
-                        name={`correct-${qIndex}`}
+                        name={q.type === "MCQ" ? `correct-${qIndex}` : undefined}
                         checked={q.correct.includes(opt)}
-                        onChange={() => handleCorrectAnswer(qIndex, opt, q.type === "MSQ")}
+                        onChange={() => handleCorrectAnswer(qIndex, oIndex, q.type === "MSQ")}
                         className="text-emerald-500 focus:ring-emerald-500"
                       />
                       <input
@@ -140,7 +145,7 @@ const QuizCreation = ({ onSave }) => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Marks
@@ -166,6 +171,20 @@ const QuizCreation = ({ onSave }) => {
                     value={q.negativeMarks}
                     onChange={(e) => handleQuestionChange(qIndex, "negativeMarks", e.target.value)}
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Difficulty
+                  </label>
+                  <select
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    value={q.difficulty}
+                    onChange={(e) => handleQuestionChange(qIndex, "difficulty", e.target.value)}
+                  >
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
                 </div>
               </div>
             </div>

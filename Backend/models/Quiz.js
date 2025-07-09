@@ -36,19 +36,25 @@ const QuizSchema = new mongoose.Schema({
   },
 
   questions: [
-    {
-      text: { type: String, required: true },
-      type: { 
-        type: String, 
-        enum: ['MCQ', 'MSQ', 'NAT', 'TrueFalse'],
-        required: true 
-      },
-      options: [{ type: String }],
-      correct: [{ type: String }],
-      marks: { type: Number, default: 1 },
-      negativeMarks: { type: Number, default: 0 }
+  {
+    text: { type: String, required: true },
+    type: { 
+      type: String, 
+      enum: ['MCQ', 'MSQ', 'NAT', 'TrueFalse'],
+      required: true 
+    },
+    options: [{ type: String }],
+    correct: [{ type: String }],
+    marks: { type: Number, default: 1 },
+    negativeMarks: { type: Number, default: 0 },
+    difficulty: {
+      type: String,
+      enum: ['Easy', 'Medium', 'Hard'],
+      default: 'Easy'
     }
-  ],
+  }
+],
+
 
   // अब हम Quiz किस Student को असाइन करेंगे, उसका array रख लेते हैं
   assignedTo: [

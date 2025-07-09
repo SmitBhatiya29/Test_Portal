@@ -15,7 +15,7 @@ const StudentSidebar = ({ currentSection, onSectionChange, onLogout }) => {
   ];
 
   return (
-    <div className="w-64 bg-white h-screen flex flex-col border-r">
+    <div className="w-64 bg-white h-screen flex flex-col border-r sticky top-0">
       <div className="p-4 flex items-center justify-between">
         <img src="/logo.svg" alt="TestPortal" className="h-6 md:h-8" />
       </div>
