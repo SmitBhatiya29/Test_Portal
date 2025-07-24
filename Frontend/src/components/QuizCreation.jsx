@@ -45,23 +45,23 @@ const QuizCreation = ({ onSave }) => {
   };
 
   const handleCorrectAnswer = (qIndex, valueIndex, isMulti) => {
-    const updatedQuestions = [...questions];
-    const selectedOption = updatedQuestions[qIndex].options[valueIndex];
+  const updatedQuestions = [...questions];
 
-    if (isMulti) {
-      if (updatedQuestions[qIndex].correct.includes(selectedOption)) {
-        updatedQuestions[qIndex].correct = updatedQuestions[qIndex].correct.filter(
-          (v) => v !== selectedOption
-        );
-      } else {
-        updatedQuestions[qIndex].correct.push(selectedOption);
-      }
+  if (isMulti) {
+    if (updatedQuestions[qIndex].correct.includes(valueIndex)) {
+      updatedQuestions[qIndex].correct = updatedQuestions[qIndex].correct.filter(
+        (v) => v !== valueIndex
+      );
     } else {
-      updatedQuestions[qIndex].correct = [selectedOption];
+      updatedQuestions[qIndex].correct.push(valueIndex);
     }
+  } else {
+    updatedQuestions[qIndex].correct = [valueIndex];
+  }
 
-    setQuestions(updatedQuestions);
-  };
+  setQuestions(updatedQuestions);
+};
+
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -98,13 +98,14 @@ const QuizCreation = ({ onSave }) => {
                 <div className="space-y-3">
                   {q.options.map((opt, oIndex) => (
                     <div key={oIndex} className="flex items-center gap-3">
-                      <input
-                        type={q.type === "MCQ" ? "radio" : "checkbox"}
-                        name={q.type === "MCQ" ? `correct-${qIndex}` : undefined}
-                        checked={q.correct.includes(opt)}
-                        onChange={() => handleCorrectAnswer(qIndex, oIndex, q.type === "MSQ")}
-                        className="text-emerald-500 focus:ring-emerald-500"
-                      />
+                    <input
+                    type={q.type === "MCQ" ? "radio" : "checkbox"}
+                    name={q.type === "MCQ" ? `correct-${qIndex}` : undefined}
+                    checked={q.correct.includes(oIndex)}
+                    onChange={() => handleCorrectAnswer(qIndex, oIndex, q.type === "MSQ")}
+                    className="text-emerald-500 focus:ring-emerald-500"
+                    />
+
                       <input
                         type="text"
                         className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"

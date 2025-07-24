@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Plus, Search, Settings2, Edit2, Trash2 } from 'lucide-react';
 
-const QuizList = ({ quizzes = [], onNewQuiz, onEditQuiz, onDeleteQuiz }) => {
+const QuizList = ({ quizzes = [], onNewQuiz, onEditQuiz, onDeleteQuiz, onDefaultTests }) => {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -10,13 +10,24 @@ const QuizList = ({ quizzes = [], onNewQuiz, onEditQuiz, onDeleteQuiz }) => {
           <h1 className="text-xl font-semibold">My tests</h1>
           <span className="text-gray-500">({quizzes.length})</span>
         </div>
-        <button
-          onClick={onNewQuiz}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-        >
-          <Plus size={18} />
-          <span>New test</span>
-        </button>
+        <div className="flex gap-2">
+          {/* Default Test Button */}
+          <button
+            onClick={onDefaultTests}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
+          >
+            <span>Default test</span>
+          </button>
+
+          {/* New Test Button */}
+          <button
+            onClick={onNewQuiz}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+          >
+            <Plus size={18} />
+            <span>New test</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
@@ -124,6 +135,7 @@ QuizList.propTypes = {
   onNewQuiz: PropTypes.func.isRequired,
   onEditQuiz: PropTypes.func.isRequired,
   onDeleteQuiz: PropTypes.func.isRequired,
+  onDefaultTests: PropTypes.func.isRequired, // ADD THIS LINE
 };
 
 export default QuizList;

@@ -44,7 +44,7 @@ const QuizSchema = new mongoose.Schema({
       required: true 
     },
     options: [{ type: String }],
-    correct: [{ type: String }],
+    correct: [{ type: mongoose.Schema.Types.Mixed }],
     marks: { type: Number, default: 1 },
     negativeMarks: { type: Number, default: 0 },
     difficulty: {
@@ -55,8 +55,6 @@ const QuizSchema = new mongoose.Schema({
   }
 ],
 
-
-  // अब हम Quiz किस Student को असाइन करेंगे, उसका array रख लेते हैं
   assignedTo: [
     {
       type: mongoose.Schema.Types.ObjectId,

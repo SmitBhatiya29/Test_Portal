@@ -108,7 +108,7 @@ const StudentDashboard = ({ onLogout }) => {
             {/* Merged Analytics Section */}
             <ParticleBackground />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                 <StatCard title="Total Students" value={stats.totalStudents} icon={Users} color="#3B82F6" />
                 <StatCard title="Questions Attempted" value={stats.totalQuestions.toLocaleString()} icon={BookOpen} color="#10B981" />
                 <StatCard title="Overall Accuracy" value={`${stats.overallAccuracy}%`} icon={Target} color="#F59E0B" />

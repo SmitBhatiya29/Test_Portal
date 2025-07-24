@@ -61,11 +61,8 @@ exports.getMyStudents = async (req, res) => {
   try {
     const students = await Student.find({ createdBy: teacherId });
 
-    if (!students || students.length === 0) {
-      return res.status(404).json({ message: 'No students found for this teacher.' });
-    }
-
-    res.status(200).json(students);
+    // Return 200 with empty array if no students found
+    res.status(200).json(students || []);
   } catch (error) {
     console.error("Error fetching students:", error);
     res.status(500).json({ message: 'Server error.' });

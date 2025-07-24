@@ -8,8 +8,16 @@ exports.createQuiz = async (req, res, next) => {
     const quizData = req.body;
     quizData.createdBy = teacherId;
 
-    const quiz = new Quiz(quizData);
-    await quiz.save();
+          // Convert correct[] values to numbers for each question
+      if (quizData.questions && Array.isArray(quizData.questions)) {
+        quizData.questions = quizData.questions.map((q) => ({
+          ...q,
+          correct: q.correct.map(Number) // 👈 this line is important
+        }));
+      }
+
+      const quiz = new Quiz(quizData);
+      await quiz.save();
 
     res.status(201).json({ message: 'Quiz created successfully', quiz });
   } catch (error) {
