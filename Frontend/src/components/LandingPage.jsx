@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import studentImage from './photos/Student_Endroll.jpg';
+import Default_Test from './photos/Default_Test.png';
+import Test from './photos/test.jpg';
 import { 
   BookOpen, 
   Users, 
@@ -22,20 +25,20 @@ const LandingPage = ({ onLogin }) => {
     {
       icon: Users,
       title: "Student Enrollment",
-      description: "Teachers can easily enroll and manage their students, creating organized classroom environments for effective learning.",
-      image: "https://images.pexels.com/photos/5212324/pexels-photo-5212324.jpeg?auto=compress&cs=tinysrgb&w=400"
-    },
+      description: "Teachers can easily enroll and manage their students, creating organized classroom environments for effective learning.", 
+       image: studentImage  
+       },
     {
       icon: BookOpen,
       title: "Smart Quiz Creation",
       description: "Create customized quizzes with chapter-wise questions and difficulty levels to match your curriculum requirements.",
-      image: "https://images.pexels.com/photos/5428836/pexels-photo-5428836.jpeg?auto=compress&cs=tinysrgb&w=400"
+      image: Default_Test
     },
     {
       icon: Award,
       title: "Student Quiz Attempts",
       description: "Students can attempt quizzes in a user-friendly interface with real-time progress tracking and immediate feedback.",
-      image: "https://images.pexels.com/photos/5212317/pexels-photo-5212317.jpeg?auto=compress&cs=tinysrgb&w=400"
+      image: Test
     },
     {
       icon: PieChart,
