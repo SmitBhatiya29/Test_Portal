@@ -332,11 +332,11 @@ const LandingPage = ({ onLogin }) => {
                 </div>
                 <div className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300 group">
                   <Phone className="w-4 h-4" />
-                  <span>+1 (555) 123-4567</span>
+                  <span>+91 9054428844</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300 group">
                   <MapPin className="w-4 h-4" />
-                  <span>San Francisco, CA</span>
+                  <span>Parul University ,Vadodara ,Gujrat</span>
                 </div>
               </div>
             </div>
@@ -347,16 +347,16 @@ const LandingPage = ({ onLogin }) => {
               © 2025 QuizMaster. All rights reserved.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+              <a href="https://www.instagram.com/_imsmitbhatiya_?igsh=bnBwenp2cmNqNjFk" className="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                 <Facebook className="w-5 h-5" />
               </a>
               <a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+              <a href="https://www.instagram.com/_imsmitbhatiya_?igsh=bnBwenp2cmNqNjFk" className="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+              <a href="https://www.linkedin.com/in/bhatiya-smit-bb1212282/" className="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                 <Linkedin className="w-5 h-5" />
               </a>
             </div>

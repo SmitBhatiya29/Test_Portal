@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const errorHandler = require('./middleware/errorHandler');
 const quizResultRoutes = require('./routes/quizResultRoutes');
+const teacherResponseRoutes = require('./routes/teacherResponseRoutes');
 
 const teacherRoutes = require('./routes/teacherRoutes');
 const studentRoutes = require('./routes/studentRoutes');
@@ -32,6 +33,7 @@ app.use('/api/teachers', teacherRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/quiz-results', quizResultRoutes);
+app.use('/api/teacher-responses', teacherResponseRoutes);
 // Error handling middleware (last middleware)
 app.use(errorHandler);
 

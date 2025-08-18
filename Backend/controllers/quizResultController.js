@@ -1,6 +1,8 @@
 // controllers/quizResultController.js
-
 const QuizResult = require('../models/QuizResult');
+const TeacherResponse = require('../models/TeacherResponse');
+const Student = require('../models/Student');
+const Quiz = require('../models/Quiz');
 
 exports.submitQuizResult = async (req, res) => {
     try {
@@ -13,32 +15,27 @@ exports.submitQuizResult = async (req, res) => {
             answersCount: answers.length
         });
 
-        // Simple validation
         if (!quizId || !studentId || !teacherId || !answers || answers.length === 0) {
-            console.log('❌ Validation failed:', { quizId, studentId, teacherId, answersLength: answers?.length });
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        // Clean and validate answers
+        // ✅ Clean answers
         const cleanAnswers = answers.map(ans => {
-            // Convert selectedOption to array for MSQ type
             let selectedOption = ans.selectedOption;
             if (ans.type === 'MSQ' && !Array.isArray(selectedOption)) {
                 selectedOption = [selectedOption];
             }
-
             return {
                 questionId: ans.questionId,
                 questionText: ans.questionText,
                 type: ans.type,
-                selectedOption: selectedOption,
+                selectedOption,
                 correctOption: ans.correctOption,
                 marksAwarded: ans.marksAwarded || 0
             };
         });
 
-        console.log('✅ Cleaned answers:', cleanAnswers);
-
+        // ✅ Save result
         const newResult = new QuizResult({
             quizId,
             studentId,
@@ -48,9 +45,29 @@ exports.submitQuizResult = async (req, res) => {
             totalNegativeMarks: totalNegativeMarks || 0
         });
 
-        console.log('📝 Saving quiz result...');
         await newResult.save();
         console.log('✅ Quiz result saved successfully');
+
+        // --- Fetch extra data for teacher response ---
+        const student = await Student.findById(studentId).select('name email');
+        const quiz = await Quiz.findById(quizId).select('basicDetails');
+
+        if (student && quiz) {
+            const quizName = quiz?.basicDetails?.testName || 'Untitled Quiz';
+
+            const teacherResponse = new TeacherResponse({
+                teacherId,
+                studentId,
+                studentName: student.name,
+                studentEmail: student.email,
+                quizId,
+                quizName,
+                score: 0 // abhi default 0
+            });
+
+            await teacherResponse.save();
+            console.log('📤 Teacher response saved');
+        }
 
         res.status(201).json({
             message: 'Quiz submitted successfully',
@@ -59,22 +76,9 @@ exports.submitQuizResult = async (req, res) => {
 
     } catch (error) {
         console.error('❌ Error submitting quiz result:', error);
-        
-        // More detailed error logging
-        if (error.name === 'ValidationError') {
-            console.error('Validation Error Details:', error.errors);
-            return res.status(400).json({ 
-                error: 'Validation Error', 
-                details: Object.keys(error.errors).map(key => ({
-                    field: key,
-                    message: error.errors[key].message
-                }))
-            });
-        }
-
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Server error while submitting quiz result',
-            details: error.message 
+            details: error.message
         });
     }
 };
