@@ -35,7 +35,8 @@ const AssessmentSection = () => {
             text: q.text,
             type: q.type,
             options: q.options,
-            correctOption: q.correct
+            correctOption: q.correct,
+            difficulty: q.difficulty
           })),
           guidelines: quiz.guidelines.content,
         }));

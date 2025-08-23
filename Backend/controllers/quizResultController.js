@@ -1,30 +1,51 @@
-// controllers/quizResultController.js
+
 const QuizResult = require('../models/QuizResult');
 const TeacherResponse = require('../models/TeacherResponse');
 const Student = require('../models/Student');
 const Quiz = require('../models/Quiz');
-
 exports.submitQuizResult = async (req, res) => {
     try {
         const { quizId, studentId, teacherId, answers, totalMarks, totalNegativeMarks } = req.body;
-
-        console.log('📥 Received quiz submission:', {
-            quizId,
-            studentId,
-            teacherId,
-            answersCount: answers.length
-        });
 
         if (!quizId || !studentId || !teacherId || !answers || answers.length === 0) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        // ✅ Clean answers
+        // ✅ Normalize answers according to type
         const cleanAnswers = answers.map(ans => {
             let selectedOption = ans.selectedOption;
-            if (ans.type === 'MSQ' && !Array.isArray(selectedOption)) {
-                selectedOption = [selectedOption];
+
+            if (ans.type === 'MCQ') {
+                // always array with one index number
+                if (!Array.isArray(selectedOption)) {
+                    selectedOption = [Number(selectedOption)];
+                } else {
+                    selectedOption = [Number(selectedOption[0])];
+                }
             }
+
+            if (ans.type === 'MSQ') {
+                // always array of indexes
+                if (!Array.isArray(selectedOption)) {
+                    selectedOption = [Number(selectedOption)];
+                } else {
+                    selectedOption = selectedOption.map(opt => Number(opt));
+                }
+            }
+
+            if (ans.type === 'NAT') {
+                selectedOption = Number(selectedOption);
+            }
+
+            if (ans.type === 'TrueFalse') {
+                // store as array with one boolean
+                if (!Array.isArray(selectedOption)) {
+                    selectedOption = [selectedOption === true || selectedOption === "true"];
+                } else {
+                    selectedOption = [selectedOption[0] === true || selectedOption[0] === "true"];
+                }
+            }
+
             return {
                 questionId: ans.questionId,
                 questionText: ans.questionText,
@@ -46,9 +67,8 @@ exports.submitQuizResult = async (req, res) => {
         });
 
         await newResult.save();
-        console.log('✅ Quiz result saved successfully');
 
-        // --- Fetch extra data for teacher response ---
+        // --- Save TeacherResponse ---
         const student = await Student.findById(studentId).select('name email');
         const quiz = await Quiz.findById(quizId).select('basicDetails');
 
@@ -62,11 +82,10 @@ exports.submitQuizResult = async (req, res) => {
                 studentEmail: student.email,
                 quizId,
                 quizName,
-                score: 0 // abhi default 0
+                score: 0 // abhi calculation baad me hoga
             });
 
             await teacherResponse.save();
-            console.log('📤 Teacher response saved');
         }
 
         res.status(201).json({

@@ -105,11 +105,28 @@ const QuestionRenderer = ({ question, selectedAnswers, onAnswerChange }) => {
 
   return (
     <div className="bg-white rounded-lg p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          Question {question.questionNumber}
-        </h3>
-        <p className="text-gray-700 leading-relaxed">{question.questionText}</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Question {question.questionNumber}
+          </h3>
+          <p className="text-gray-700 leading-relaxed">{question.questionText}</p>
+        </div>
+
+        {/* ✅ Difficulty Badge */}
+        {question.difficulty && (
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-medium ${
+              question.difficulty === 'Easy'
+                ? 'bg-green-100 text-green-700'
+                : question.difficulty === 'Medium'
+                ? 'bg-yellow-100 text-yellow-700'
+                : 'bg-red-100 text-red-700'
+            }`}
+          >
+            {question.difficulty}
+          </span>
+        )}
       </div>
       {renderOptions()}
     </div>

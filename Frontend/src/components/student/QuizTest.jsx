@@ -20,7 +20,8 @@ const QuizTest = ({ testData, onEndTest }) => {
     type: q.type,
     questionText: q.text,
     options: q.options,
-    correctOption: q.correctOption || '' // optional if available
+    correctOption: q.correctOption || '' ,// optional if available
+    difficulty: q.difficulty || 'Easy'
   }));
 
   // Convert duration string to seconds

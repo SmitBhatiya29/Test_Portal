@@ -19,25 +19,26 @@ const AnswerSchema = new mongoose.Schema({
         required: true,
         validate: {
             validator: function(v) {
-                // For MSQ, ensure it's an array
+                if (this.type === 'MCQ') {
+                    return Array.isArray(v) && v.length === 1 && typeof v[0] === 'number';
+                }
                 if (this.type === 'MSQ') {
-                    return Array.isArray(v);
+                    return Array.isArray(v) && v.every(opt => typeof opt === 'number');
                 }
-                // For MCQ and TrueFalse, ensure it's a string
-                if (this.type === 'MCQ' || this.type === 'TrueFalse') {
-                    return typeof v === 'string';
-                }
-                // For NAT, ensure it's a number
                 if (this.type === 'NAT') {
                     return typeof v === 'number' || !isNaN(Number(v));
                 }
+                if (this.type === 'TrueFalse') {
+                    return Array.isArray(v) && v.length === 1 && 
+                        (v[0] === true || v[0] === false || v[0] === "true" || v[0] === "false");
+                }
                 return true;
             },
-            message: 'Invalid answer format for question type'
+            message: 'Invalid selectedOption format for question type'
         }
     },
     correctOption: { 
-        type: mongoose.Schema.Types.Mixed,
+        type: [mongoose.Schema.Types.Mixed], // always array
         required: true
     },
     marksAwarded: { 
