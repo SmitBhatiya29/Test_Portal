@@ -19,6 +19,10 @@ const AnswerSchema = new mongoose.Schema({
         enum: ['Easy', 'Medium', 'Hard'],
         default: 'Easy'
     },
+    chapter: {
+        type: String,
+        default: ''
+    },
     selectedOption: { 
         type: mongoose.Schema.Types.Mixed,
         required: true,

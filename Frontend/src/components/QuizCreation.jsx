@@ -2,26 +2,27 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import axios from "axios";
 
-const QuizCreation = ({ onSave }) => {
+const QuizCreation = ({ onSave, chapters = [] }) => {
   const [questions, setQuestions] = useState([
-    { id: 1, text: "", type: "MCQ", options: ["", "", "", ""], correct: [], marks: 1, negativeMarks: 0, difficulty: "Easy" }
+    { id: 1, text: "", type: "MCQ", options: ["", "", "", ""], correct: [], marks: 1, negativeMarks: 0, difficulty: "Easy", chapter: '' }
   ]);
 
   const handleAddQuestion = () => {
     setQuestions([
       ...questions,
-      { id: questions.length + 1, text: "", type: "MCQ", options: ["", "", "", ""], correct: [], marks: 1, negativeMarks: 0, difficulty: "Easy" }
+      { id: questions.length + 1, text: "", type: "MCQ", options: ["", "", "", ""], correct: [], marks: 1, negativeMarks: 0, difficulty: "Easy", chapter: '' }
     ]);
   };
 
   const handleCreateTest = () => {
     const isValid = questions.every(q => 
       q.text.trim() !== "" && 
-      (q.type === "NAT" ? q.correct.length > 0 : q.options.every(opt => opt.trim() !== ""))
+      (q.type === "NAT" ? q.correct.length > 0 : q.options.every(opt => opt.trim() !== "")) &&
+      (chapters.length === 0 || (q.chapter && chapters.includes(q.chapter)))
     );
 
     if (!isValid) {
-      alert("Please fill in all required fields for each question");
+      alert("Please fill in all required fields for each question and assign a chapter.");
       return;
     }
 
@@ -188,6 +189,24 @@ const QuizCreation = ({ onSave }) => {
                   </select>
                 </div>
               </div>
+
+              {/* Chapter selection per question */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Chapter</label>
+                <select
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  value={q.chapter || ''}
+                  onChange={(e) => handleQuestionChange(qIndex, 'chapter', e.target.value)}
+                >
+                  <option value="" disabled>{chapters.length ? 'Select a chapter' : 'Add chapters in Basic Details'}</option>
+                  {chapters.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                {(!q.chapter || !chapters.includes(q.chapter)) && (
+                  <p className="text-xs text-amber-600 mt-1">Please assign a chapter to this question.</p>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -213,6 +232,7 @@ const QuizCreation = ({ onSave }) => {
 
 QuizCreation.propTypes = {
   onSave: PropTypes.func.isRequired,
+  chapters: PropTypes.arrayOf(PropTypes.string)
 };
 
 export default QuizCreation;

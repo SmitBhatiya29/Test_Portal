@@ -13,7 +13,8 @@ const QuizSchema = new mongoose.Schema({
     description: { type: String },
     language: { type: String, default: 'en' },
     logoOption: { type: String, enum: ['custom', 'app', 'none'], default: 'app' },
-    logoUrl: { type: String }
+    logoUrl: { type: String },
+    chapters: [{ type: String }]
   },
 
   guidelines: {
@@ -51,7 +52,9 @@ const QuizSchema = new mongoose.Schema({
       type: String,
       enum: ['Easy', 'Medium', 'Hard'],
       default: 'Easy'
-    }
+    },
+    chapter: { type: String, default: '' },
+    tags: [{ type: String }]
   }
 ],
 

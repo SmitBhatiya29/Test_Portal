@@ -8,16 +8,48 @@ exports.createQuiz = async (req, res, next) => {
     const quizData = req.body;
     quizData.createdBy = teacherId;
 
-          // Convert correct[] values to numbers for each question
-      if (quizData.questions && Array.isArray(quizData.questions)) {
-        quizData.questions = quizData.questions.map((q) => ({
-          ...q,
-          correct: q.correct.map(Number) // 👈 this line is important
-        }));
-      }
+    // Normalize correct answers based on question type (avoid breaking True/False)
+    if (quizData.questions && Array.isArray(quizData.questions)) {
+      const toBoolean = (val) => {
+        if (typeof val === 'boolean') return val;
+        if (typeof val === 'string') {
+          const v = val.trim().toLowerCase();
+          if (v === 'true') return true;
+          if (v === 'false') return false;
+        }
+        return Boolean(val);
+      };
 
-      const quiz = new Quiz(quizData);
-      await quiz.save();
+      quizData.questions = quizData.questions.map((q) => {
+        const type = q?.type;
+        const raw = Array.isArray(q?.correct) ? q.correct : [q?.correct];
+
+        let correct;
+        if (type === 'MCQ') {
+          // single index inside array
+          const n = Number(Array.isArray(raw) ? raw[0] : raw);
+          correct = [Number.isNaN(n) ? 0 : n];
+        } else if (type === 'MSQ') {
+          // array of indices
+          correct = raw.map((v) => Number(v)).filter((n) => Number.isInteger(n));
+        } else if (type === 'NAT') {
+          // store single numeric value
+          const n = Number(Array.isArray(raw) ? raw[0] : raw);
+          correct = [Number.isNaN(n) ? 0 : n];
+        } else if (type === 'TrueFalse') {
+          // store single boolean inside array
+          const v = Array.isArray(raw) ? raw[0] : raw;
+          correct = [toBoolean(v)];
+        } else {
+          correct = raw; // fallback
+        }
+
+        return { ...q, correct };
+      });
+    }
+
+    const quiz = new Quiz(quizData);
+    await quiz.save();
 
     res.status(201).json({ message: 'Quiz created successfully', quiz });
   } catch (error) {

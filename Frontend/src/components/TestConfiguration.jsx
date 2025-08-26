@@ -96,7 +96,7 @@ const handleCreate = async (questions) => {
       case 4:
         return <TimeSettingsSection onCreate={(data) => handleStepComplete('timeSettings', data)} />;
       case 5:
-        return <QuizCreation onSave={handleCreate} />;
+        return <QuizCreation chapters={formData.basicDetails?.chapters || []} onSave={handleCreate} />;
       default:
         return null;
     }

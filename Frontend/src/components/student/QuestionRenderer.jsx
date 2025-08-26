@@ -5,13 +5,11 @@ const QuestionRenderer = ({ question, selectedAnswers, onAnswerChange }) => {
     if (question.type === 'MSQ') {
       const currentAnswers = selectedAnswers[question.id] || [];
       let newAnswers;
-      
       if (isChecked) {
         newAnswers = [...currentAnswers, value];
       } else {
         newAnswers = currentAnswers.filter(answer => answer !== value);
       }
-      
       onAnswerChange(question.id, newAnswers);
     } else {
       onAnswerChange(question.id, value);
@@ -28,9 +26,9 @@ const QuestionRenderer = ({ question, selectedAnswers, onAnswerChange }) => {
                 <input
                   type="radio"
                   name={`question-${question.id}`}
-                  value={option}
-                  checked={selectedAnswers[question.id] === option}
-                  onChange={(e) => handleAnswerChange(e.target.value)}
+                  value={index}
+                  checked={selectedAnswers[question.id] === index}
+                  onChange={() => handleAnswerChange(index)}
                   className="mr-3 w-4 h-4 text-emerald-600 focus:ring-emerald-500"
                 />
                 <span className="text-gray-700">{option}</span>
@@ -46,9 +44,9 @@ const QuestionRenderer = ({ question, selectedAnswers, onAnswerChange }) => {
               <label key={index} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                 <input
                   type="checkbox"
-                  value={option}
-                  checked={(selectedAnswers[question.id] || []).includes(option)}
-                  onChange={(e) => handleAnswerChange(option, e.target.checked)}
+                  value={index}
+                  checked={(selectedAnswers[question.id] || []).includes(index)}
+                  onChange={(e) => handleAnswerChange(index, e.target.checked)}
                   className="mr-3 w-4 h-4 text-emerald-600 focus:ring-emerald-500 rounded"
                 />
                 <span className="text-gray-700">{option}</span>

@@ -7,6 +7,8 @@ const BasicDetailsSection = ({ onNext }) => {
   const [subjectName, setSubjectName] = useState('');
   const [description, setDescription] = useState('');
   const [language, setLanguage] = useState('en');
+  const [chapterInput, setChapterInput] = useState('');
+  const [chapters, setChapters] = useState([]);
 
   const handleNext = () => {
     if (!testName.trim()) {
@@ -22,7 +24,8 @@ const BasicDetailsSection = ({ onNext }) => {
       subjectName,
       description,
       language,
-      logoOption
+      logoOption,
+      chapters
     });
   };
 
@@ -65,6 +68,52 @@ const BasicDetailsSection = ({ onNext }) => {
             className="w-full px-4 py-2 border rounded-lg h-32 resize-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             placeholder="Enter test description"
           />
+        </div>
+
+        {/* Chapters Input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Chapters</label>
+          <div className="flex gap-2">
+            <input
+              value={chapterInput}
+              onChange={(e) => setChapterInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault();
+                  const value = chapterInput.trim();
+                  if (!value) return;
+                  if (!chapters.includes(value)) setChapters([...chapters, value]);
+                  setChapterInput('');
+                }
+              }}
+              className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="Type a chapter and press Enter"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const value = chapterInput.trim();
+                if (!value) return;
+                if (!chapters.includes(value)) setChapters([...chapters, value]);
+                setChapterInput('');
+              }}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            >
+              Add
+            </button>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {chapters.map((c) => (
+              <span key={c} className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm">
+                {c}
+                <button type="button" onClick={() => setChapters(chapters.filter(x => x !== c))} className="hover:text-emerald-900">×</button>
+              </span>
+            ))}
+            {chapters.length === 0 && (
+              <span className="text-sm text-gray-500">No chapters added yet.</span>
+            )}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">Add chapters to tag each question in the next step.</p>
         </div>
 
         <div>
