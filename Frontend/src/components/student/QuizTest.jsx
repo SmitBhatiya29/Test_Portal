@@ -174,7 +174,14 @@ const QuizTest = ({ testData, onEndTest }) => {
       );
 
       console.log('✅ Quiz result submitted successfully.', response.data);
-      alert('Quiz submitted successfully!');
+      const summary = response?.data?.summary;
+      if (summary) {
+        // Persist last summary for result screen
+        localStorage.setItem('lastResultSummary', JSON.stringify(summary));
+        alert(`Quiz submitted! Your score: ${summary.obtainedMarks}/${summary.totalPossibleMarks}`);
+      } else {
+        alert('Quiz submitted successfully!');
+      }
     } catch (error) {
       console.error('❌ Error submitting quiz result:', error);
 
@@ -186,7 +193,14 @@ const QuizTest = ({ testData, onEndTest }) => {
       alert('Failed to submit quiz. Please try again.');
     } finally {
       setTestStarted(false);
-      onEndTest();
+      // Pass summary up if parent wants to show a result page
+      try {
+        const stored = localStorage.getItem('lastResultSummary');
+        const summary = stored ? JSON.parse(stored) : null;
+        onEndTest && onEndTest(summary);
+      } catch {
+        onEndTest && onEndTest();
+      }
     }
   };
 

@@ -14,6 +14,11 @@ const AnswerSchema = new mongoose.Schema({
         enum: ['MCQ', 'MSQ', 'NAT', 'TrueFalse'], 
         required: true 
     },
+    difficulty: {
+        type: String,
+        enum: ['Easy', 'Medium', 'Hard'],
+        default: 'Easy'
+    },
     selectedOption: { 
         type: mongoose.Schema.Types.Mixed,
         required: true,
@@ -65,6 +70,10 @@ const QuizResultSchema = new mongoose.Schema({
         required: true 
     },
     answers: [AnswerSchema],
+    // Grouped by difficulty for convenient querying/reporting
+    easyQuestions: [AnswerSchema],
+    mediumQuestions: [AnswerSchema],
+    hardQuestions: [AnswerSchema],
     totalMarks: { 
         type: Number, 
         required: true,

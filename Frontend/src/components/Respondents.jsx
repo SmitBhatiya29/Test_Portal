@@ -121,8 +121,8 @@ const Respondents = ({ teacherId: propTeacherId }) => {
                     ? (
                         results.reduce((acc, r) => acc + (r.score || 0), 0) /
                         results.length
-                      ).toFixed(1) + "%"
-                    : "0%"}
+                      ).toFixed(1) + ""
+                    : "0"}
                 </p>
               </div>
             </div>
@@ -242,7 +242,7 @@ const Respondents = ({ teacherId: propTeacherId }) => {
                             result.score || 0
                           )}`}
                         >
-                          {result.score || 0}%
+                          {result.score || 0}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
