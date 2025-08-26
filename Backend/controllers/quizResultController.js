@@ -1,9 +1,11 @@
-
 const QuizResult = require('../models/QuizResult');
 const TeacherResponse = require('../models/TeacherResponse');
 const Student = require('../models/Student');
 const Quiz = require('../models/Quiz');
 const ResultSummary = require('../models/ResultSummary');
+const Subject = require('../models/Subject');
+const ChapterWiseResult = require('../models/ChapterWiseResult');
+
 const submitQuizResult = async (req, res) => {
     try {
         const { quizId, studentId, teacherId, answers, totalMarks, totalNegativeMarks } = req.body;
@@ -12,8 +14,7 @@ const submitQuizResult = async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-
-        // ✅ Load quiz to get authoritative question definitions
+        // Load quiz
         const quizDoc = await Quiz.findById(quizId);
         if (!quizDoc) {
             return res.status(404).json({ error: 'Quiz not found' });
@@ -24,21 +25,16 @@ const submitQuizResult = async (req, res) => {
             questionMap.set(String(q._id), q);
         }
 
-        // Helpers to coerce inputs safely
         const toIndex = (val, options = []) => {
-            // If already number-like
             if (typeof val === 'number' && Number.isInteger(val)) return val;
             const asNum = Number(val);
             if (!Number.isNaN(asNum) && Number.isInteger(asNum)) return asNum;
-            // Try to match option text
             if (typeof val === 'string' && options && options.length) {
                 const idx = options.findIndex(o => String(o) === val || String(o) === String(val));
                 return idx >= 0 ? idx : -1;
             }
             return -1;
         };
-
-// (exports moved to end of file)
 
         const toBoolean = (val) => {
             if (typeof val === 'boolean') return val;
@@ -50,15 +46,13 @@ const submitQuizResult = async (req, res) => {
             return Boolean(val);
         };
 
-        // ✅ Normalize answers according to actual question type/options
         const cleanAnswers = answers.map(ans => {
             const q = questionMap.get(String(ans.questionId));
-            const qType = q?.type || ans.type; // fallback to client-provided type
+            const qType = q?.type || ans.type;
             const options = q?.options || [];
 
             let selectedOption = ans.selectedOption;
 
-            // Helper to normalize correct answers based on question type
             const normalizeCorrect = () => {
                 const raw = Array.isArray(q?.correct)
                     ? q.correct
@@ -67,12 +61,10 @@ const submitQuizResult = async (req, res) => {
                         : [ans.correctOption];
 
                 if (qType === 'MCQ') {
-                    // Expect single index in array
                     const idxVals = raw.map(v => toIndex(v, options)).filter(i => i >= 0);
                     return idxVals.length ? [idxVals[0]] : [];
                 }
                 if (qType === 'MSQ') {
-                    // Expect array of indices
                     const idxVals = raw.map(v => toIndex(v, options)).filter(i => i >= 0);
                     return idxVals;
                 }
@@ -88,7 +80,6 @@ const submitQuizResult = async (req, res) => {
             };
 
             if (qType === 'MCQ') {
-                // Expect single index inside array
                 let idx;
                 if (Array.isArray(selectedOption)) {
                     idx = toIndex(selectedOption[0], options);
@@ -97,7 +88,6 @@ const submitQuizResult = async (req, res) => {
                 }
                 selectedOption = [idx >= 0 ? idx : 0];
             } else if (qType === 'MSQ') {
-                // Expect array of indexes
                 const vals = Array.isArray(selectedOption) ? selectedOption : [selectedOption];
                 const indices = vals.map(v => toIndex(v, options)).filter(i => i >= 0);
                 selectedOption = indices;
@@ -105,12 +95,10 @@ const submitQuizResult = async (req, res) => {
                 const num = Number(selectedOption);
                 selectedOption = Number.isNaN(num) ? 0 : num;
             } else if (qType === 'TrueFalse') {
-                // Store as array with one boolean
                 const v = Array.isArray(selectedOption) ? selectedOption[0] : selectedOption;
                 selectedOption = [toBoolean(v)];
             }
 
-            // Compare selected vs correct to compute marks
             const isEqualArray = (a, b) => {
                 if (!Array.isArray(a) || !Array.isArray(b)) return false;
                 if (a.length !== b.length) return false;
@@ -137,19 +125,17 @@ const submitQuizResult = async (req, res) => {
                 questionText: ans.questionText,
                 type: qType,
                 difficulty: q?.difficulty || 'Easy',
+                chapter: q?.chapter || '',
                 selectedOption,
-                // Use authoritative correct answers from quiz, normalized to consistent types
                 correctOption: correct,
                 marksAwarded: awarded
             };
         });
 
-        // Group answers by difficulty for convenience
         const easyQuestions = cleanAnswers.filter(a => a.difficulty === 'Easy');
         const mediumQuestions = cleanAnswers.filter(a => a.difficulty === 'Medium');
         const hardQuestions = cleanAnswers.filter(a => a.difficulty === 'Hard');
 
-        // Totals and difficulty metrics
         const totalQuestions = cleanAnswers.length;
         const totalPossibleMarks = quizDoc.questions.reduce((s, q) => s + (q.marks || 0), 0);
         const totalNegativePossible = quizDoc.questions.reduce((s, q) => s + (q.negativeMarks || 0), 0);
@@ -172,7 +158,69 @@ const submitQuizResult = async (req, res) => {
             hard: hardQuestions.reduce((s, a) => s + (a.marksAwarded || 0), 0),
         };
 
-        // ✅ Save result
+        // Resolve subject doc
+        const rawSubjectName = quizDoc?.basicDetails?.subjectName || 'unspecified';
+        const keyName = String(rawSubjectName || 'unspecified').trim().toLowerCase();
+        const subjectDoc = await Subject.findOneAndUpdate(
+          { name: keyName },
+          { $setOnInsert: { name: keyName, displayName: rawSubjectName } },
+          { upsert: true, new: true }
+        );
+
+        // Chapter aggregation
+        const chapterAgg = new Map();
+        for (const a of cleanAnswers) {
+            const chapter = (a.chapter || '').trim() || 'Unspecified';
+            const diff = (a.difficulty || 'Easy').toLowerCase();
+            const isCorrect = (a.marksAwarded || 0) > 0;
+            if (!chapterAgg.has(chapter)) {
+                chapterAgg.set(chapter, {
+                    easy: { total: 0, correct: 0, wrong: 0 },
+                    medium: { total: 0, correct: 0, wrong: 0 },
+                    hard: { total: 0, correct: 0, wrong: 0 },
+                });
+            }
+            const bucket = chapterAgg.get(chapter)[diff] || chapterAgg.get(chapter).easy;
+            bucket.total += 1;
+            if (isCorrect) bucket.correct += 1; else bucket.wrong += 1;
+        }
+
+        const overallInc = {
+            totalQuestions: totalQuestions,
+            totalCorrect: cleanAnswers.filter(a => (a.marksAwarded || 0) > 0).length,
+            totalWrong: cleanAnswers.filter(a => (a.marksAwarded || 0) <= 0).length,
+            easy: { total: counts.easy, correct: correctCounts.easy, wrong: counts.easy - correctCounts.easy },
+            medium: { total: counts.medium, correct: correctCounts.medium, wrong: counts.medium - correctCounts.medium },
+            hard: { total: counts.hard, correct: correctCounts.hard, wrong: counts.hard - correctCounts.hard },
+        };
+
+        const incDoc = {};
+        incDoc['performance.totalQuestions'] = overallInc.totalQuestions;
+        incDoc['performance.totalCorrect'] = overallInc.totalCorrect;
+        incDoc['performance.totalWrong'] = overallInc.totalWrong;
+        for (const d of ['easy','medium','hard']) {
+            incDoc[`performance.${d}.total`] = overallInc[d].total;
+            incDoc[`performance.${d}.correct`] = overallInc[d].correct;
+            incDoc[`performance.${d}.wrong`] = overallInc[d].wrong;
+        }
+        for (const [ch, stats] of chapterAgg.entries()) {
+            for (const d of ['easy','medium','hard']) {
+                incDoc[`chapters.${ch}.${d}.total`] = (incDoc[`chapters.${ch}.${d}.total`] || 0) + stats[d].total;
+                incDoc[`chapters.${ch}.${d}.correct`] = (incDoc[`chapters.${ch}.${d}.correct`] || 0) + stats[d].correct;
+                incDoc[`chapters.${ch}.${d}.wrong`] = (incDoc[`chapters.${ch}.${d}.wrong`] || 0) + stats[d].wrong;
+            }
+        }
+
+        await ChapterWiseResult.updateOne(
+          { studentId, subjectId: subjectDoc._id },
+          {
+            $setOnInsert: { studentId, subjectId: subjectDoc._id },
+            $inc: incDoc,
+          },
+          { upsert: true }
+        );
+
+        // Save quiz result
         const newResult = new QuizResult({
             quizId,
             studentId,
@@ -187,7 +235,7 @@ const submitQuizResult = async (req, res) => {
 
         await newResult.save();
 
-        // --- Save TeacherResponse ---
+        // TeacherResponse
         const student = await Student.findById(studentId).select('name email');
         const quiz = await Quiz.findById(quizId).select('basicDetails');
 
@@ -207,7 +255,7 @@ const submitQuizResult = async (req, res) => {
             await teacherResponse.save();
         }
 
-        // --- Save ResultSummary ---
+        // ResultSummary
         const summary = new ResultSummary({
             quizId,
             studentId,
@@ -238,7 +286,6 @@ const submitQuizResult = async (req, res) => {
                 marksByDifficulty,
             }
         });
-
     } catch (error) {
         console.error('❌ Error submitting quiz result:', error);
         res.status(500).json({
@@ -281,12 +328,61 @@ const getResultSummary = async (req, res) => {
     }
 };
 
+// GET: chapter-wise summary merged across all quizzes per subject for a student
+async function getChapterSummaryForStudent(req, res) {
+    try {
+        const { studentId } = req.params;
+        if (!studentId) {
+            return res.status(400).json({ error: 'studentId is required' });
+        }
+
+        const docs = await ChapterWiseResult.find({ studentId })
+            .populate({ path: 'subjectId', select: 'name displayName' })
+            .lean();
+
+        const subjects = docs.map(d => {
+            const subjectName = d.subjectId?.displayName || d.subjectId?.name || 'unspecified';
+            const chapters = {};
+            if (d.chapters && typeof d.chapters === 'object') {
+                const asObj = typeof d.chapters.entries === 'function' ? Object.fromEntries(d.chapters) : d.chapters;
+                for (const [chName, v] of Object.entries(asObj)) {
+                    chapters[chName] = {
+                        easy: v?.easy || { total: 0, correct: 0, wrong: 0 },
+                        medium: v?.medium || { total: 0, correct: 0, wrong: 0 },
+                        hard: v?.hard || { total: 0, correct: 0, wrong: 0 },
+                    };
+                }
+            }
+
+            return {
+                subjectId: d.subjectId?._id,
+                subjectName,
+                performance: d.performance || {
+                    totalQuestions: 0,
+                    totalCorrect: 0,
+                    totalWrong: 0,
+                    easy: { total: 0, correct: 0, wrong: 0 },
+                    medium: { total: 0, correct: 0, wrong: 0 },
+                    hard: { total: 0, correct: 0, wrong: 0 },
+                },
+                chapters,
+            };
+        });
+
+        return res.json({ subjects });
+    } catch (error) {
+        console.error('❌ Error fetching chapter summary:', error);
+        return res.status(500).json({ error: 'Server error fetching chapter summary' });
+    }
+}
+
 // Export handlers for router
 module.exports = {
   submitQuizResult,
   getResultSummary,
   // Fetch all results for a student, enriched with quiz details
   getStudentResults,
+  getChapterSummaryForStudent,
 };
 
 // GET: all results for a student (with subject & test names)

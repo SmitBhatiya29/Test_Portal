@@ -111,6 +111,43 @@ export default function TeacherAnalytics() {
     return { matrix, order };
   }, [data]);
 
+  // New: Accuracy distribution across students (bins)
+  const accuracyDistribution = useMemo(() => {
+    const bins = [
+      { label: '0-20%', min: 0, max: 20, count: 0 },
+      { label: '21-40%', min: 21, max: 40, count: 0 },
+      { label: '41-60%', min: 41, max: 60, count: 0 },
+      { label: '61-80%', min: 61, max: 80, count: 0 },
+      { label: '81-100%', min: 81, max: 100, count: 0 },
+    ];
+    (data?.studentComparison || []).forEach(s => {
+      const acc = Math.max(0, Math.min(100, s?.avgAccuracy || 0));
+      const bin = bins.find(b => acc >= b.min && acc <= b.max);
+      if (bin) bin.count += 1;
+    });
+    return bins;
+  }, [data]);
+
+  // New: Overall difficulty weaknesses (average accuracy per difficulty)
+  const difficultySummary = useMemo(() => {
+    const agg = { Easy: { sum: 0, n: 0 }, Medium: { sum: 0, n: 0 }, Hard: { sum: 0, n: 0 } };
+    (data?.subjectDifficulty || []).forEach(row => {
+      const d = row?.difficulty || 'Easy';
+      const a = row?.accuracy || 0;
+      if (agg[d]) { agg[d].sum += a; agg[d].n += 1; }
+    });
+    const avg = Object.fromEntries(Object.entries(agg).map(([k, v]) => [k, v.n ? v.sum / v.n : 0]));
+    const sorted = Object.entries(avg).sort((a,b) => a[1]-b[1]);
+    return { avg, weakest: sorted[0]?.[0] || 'N/A', strongest: sorted[sorted.length-1]?.[0] || 'N/A' };
+  }, [data]);
+
+  // New: At-risk students (lowest accuracy)
+  const atRiskStudents = useMemo(() => {
+    return [...(data?.studentComparison || [])]
+      .sort((a,b) => (a?.avgAccuracy||0) - (b?.avgAccuracy||0))
+      .slice(0, 5);
+  }, [data]);
+
   if (loading) return <div className="p-6">Loading analytics...</div>;
   if (error) return <div className="p-6 text-red-600">{error}</div>;
 
@@ -213,6 +250,67 @@ export default function TeacherAnalytics() {
         </div>
       </div>
 
+      {/* New: Accuracy Distribution and At-Risk Students */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-lg font-semibold">Accuracy Distribution</div>
+            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Histogram</span>
+          </div>
+          <div>
+            {accuracyDistribution.map(b => (
+              <Bar key={b.label} label={b.label} value={(b.count || 0)} max={Math.max(1, Math.max(...accuracyDistribution.map(x=>x.count||0)))} />
+            ))}
+            {accuracyDistribution.every(b => b.count === 0) && (
+              <div className="text-sm text-gray-500">No data</div>
+            )}
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-lg font-semibold">At-Risk Students</div>
+            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Bottom 5 by Accuracy</span>
+          </div>
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-600">
+                <th className="p-2">Student</th>
+                <th className="p-2">Email</th>
+                <th className="p-2">Avg. Accuracy</th>
+              </tr>
+            </thead>
+            <tbody>
+              {atRiskStudents.map(s => (
+                <tr key={s.studentId} className="border-t">
+                  <td className="p-2">{s.name || 'Unknown'}</td>
+                  <td className="p-2 text-gray-600">{s.email || ''}</td>
+                  <td className="p-2">{(s.avgAccuracy || 0).toFixed(1)}%</td>
+                </tr>
+              ))}
+              {atRiskStudents.length === 0 && (
+                <tr><td className="p-2 text-gray-500" colSpan="3">No data</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* New: Overall Difficulty Summary */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-lg font-semibold">Overall Difficulty Performance</div>
+          <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Summary</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card title="Avg Easy Accuracy" value={(difficultySummary.avg.Easy || 0).toFixed(1)} suffix="%" icon={<Target size={18} />} />
+          <Card title="Avg Medium Accuracy" value={(difficultySummary.avg.Medium || 0).toFixed(1)} suffix="%" icon={<Target size={18} />} />
+          <Card title="Avg Hard Accuracy" value={(difficultySummary.avg.Hard || 0).toFixed(1)} suffix="%" icon={<Target size={18} />} />
+        </div>
+        <div className="text-sm text-gray-600 mt-2">
+          Weakest Difficulty: <span className="font-medium text-red-600">{difficultySummary.weakest}</span> · Strongest Difficulty: <span className="font-medium text-emerald-600">{difficultySummary.strongest}</span>
+        </div>
+      </div>
+
       {/* Student-wise Comparison */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <div className="text-lg font-semibold mb-2">Student-wise Comparison</div>
@@ -245,29 +343,7 @@ export default function TeacherAnalytics() {
         </div>
       </div>
 
-      {/* Trend Analysis */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <div className="text-lg font-semibold mb-2">Trend Analysis</div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <div className="text-sm text-gray-600 mb-1">Accuracy over time</div>
-            <SimpleLine points={(trend || []).map(t => t.accuracy || 0)} />
-          </div>
-          <div>
-            <div className="text-sm text-gray-600 mb-1">Score over time</div>
-            <SimpleLine points={(trend || []).map(t => t.score || 0)} />
-          </div>
-        </div>
-      </div>
-
-      {/* Notes */}
-      {Array.isArray(data?.notes) && data.notes.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded p-3 text-sm">
-          <ul className="list-disc ml-5">
-            {data.notes.map((n, i) => (<li key={i}>{n}</li>))}
-          </ul>
-        </div>
-      )}
+      
     </div>
   );
 }

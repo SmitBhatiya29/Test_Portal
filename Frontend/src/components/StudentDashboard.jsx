@@ -35,6 +35,7 @@ const StudentDashboard = ({ onLogout }) => {
   });
   const [studentId, setStudentId] = useState(null);
   const [resultsData, setResultsData] = useState([]); // raw results from backend
+  const [chapterSummary, setChapterSummary] = useState(null); // from ChapterWiseResult endpoint
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -78,6 +79,19 @@ const StudentDashboard = ({ onLogout }) => {
       });
   }, [studentId]);
 
+  // Fetch chapter-wise merged summary for the student (ChapterWiseResult)
+  useEffect(() => {
+    const sid = studentId || localStorage.getItem('studentId');
+    if (!sid) return;
+    axios.get(`http://localhost:5000/api/quiz-results/student/${sid}/chapter-summary`)
+      .then(res => {
+        setChapterSummary(res.data);
+      })
+      .catch(err => {
+        console.error('Failed to fetch chapter summary:', err);
+      });
+  }, [studentId]);
+
   // Transform backend results into records expected by processors
   const processedRecords = useMemo(() => {
     // Each backend result has: subjectName, testName, counts {easy,medium,hard}, correctCounts {...}, totalQuestions, totalCorrect
@@ -109,12 +123,69 @@ const StudentDashboard = ({ onLogout }) => {
     return rows;
   }, [resultsData, studentInfo.name]);
 
-  const chartData = useMemo(() => ({
-    accuracyBySubject: processAccuracyBySubject(processedRecords),
-    accuracyByDifficulty: processAccuracyByDifficulty(processedRecords),
-    accuracyByChapterDifficulty: processAccuracyByChapterAndDifficulty(processedRecords),
-    questionsByChapter: processQuestionsByChapter(processedRecords)
-  }), [processedRecords]);
+  const chartData = useMemo(() => {
+    const base = {
+      accuracyBySubject: processAccuracyBySubject(processedRecords),
+      accuracyByDifficulty: processAccuracyByDifficulty(processedRecords),
+      accuracyByChapterDifficulty: processAccuracyByChapterAndDifficulty(processedRecords),
+      questionsByChapter: processQuestionsByChapter(processedRecords),
+    };
+
+    // Override two charts using ChapterWiseResult if available
+    if (chapterSummary && Array.isArray(chapterSummary.subjects)) {
+      const byChapter = new Map();
+      chapterSummary.subjects.forEach(s => {
+        const chapters = s.chapters || {};
+        Object.entries(chapters).forEach(([ch, v]) => {
+          if (!byChapter.has(ch)) {
+            byChapter.set(ch, {
+              easy: { total: 0, correct: 0 },
+              medium: { total: 0, correct: 0 },
+              hard: { total: 0, correct: 0 },
+            });
+          }
+          const agg = byChapter.get(ch);
+          const add = (key) => {
+            const t = (v?.[key]?.total) || 0;
+            const c = (v?.[key]?.correct) || 0;
+            agg[key].total += t;
+            agg[key].correct += c;
+          };
+          add('easy'); add('medium'); add('hard');
+        });
+      });
+
+      const accuracyByChapterDifficulty = Array.from(byChapter.entries()).map(([chapter, stats]) => ({
+        chapter,
+        Easy: stats.easy.total > 0 ? Math.round((stats.easy.correct / stats.easy.total) * 100) : 0,
+        Medium: stats.medium.total > 0 ? Math.round((stats.medium.correct / stats.medium.total) * 100) : 0,
+        Hard: stats.hard.total > 0 ? Math.round((stats.hard.correct / stats.hard.total) * 100) : 0,
+      }));
+
+      const questionsByChapter = Array.from(byChapter.entries()).map(([chapter, stats]) => ({
+        chapter,
+        attempted: (stats.easy.total + stats.medium.total + stats.hard.total),
+        correct: (stats.easy.correct + stats.medium.correct + stats.hard.correct),
+      }));
+
+      base.accuracyByChapterDifficulty = accuracyByChapterDifficulty;
+      base.questionsByChapter = questionsByChapter;
+
+      // Average Accuracy by Subject from cumulative performance
+      const accuracyBySubject = chapterSummary.subjects.map(s => {
+        const perf = s.performance || {};
+        const totalQ = perf.totalQuestions || 0;
+        const totalC = perf.totalCorrect || 0;
+        return {
+          subject: s.subjectName || 'Unspecified',
+          accuracy: totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0,
+        };
+      });
+      base.accuracyBySubject = accuracyBySubject;
+    }
+
+    return base;
+  }, [processedRecords, chapterSummary]);
 
   // KPI metrics from backend-transformed records
   const kpis = useMemo(() => {
