@@ -1,48 +1,91 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
+import axios from 'axios';
 
 const ResultSection = () => {
   const [selectedSubject, setSelectedSubject] = useState(null);
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const subjects = [
-    {
-      name: 'Mathematics',
-      color: 'bg-blue-50 text-blue-600',
-      results: [
-        { testName: 'Calculus Mid-Term', marksObtained: 85, totalMarks: 100, date: '2024-12-15' },
-        { testName: 'Linear Algebra Quiz', marksObtained: 45, totalMarks: 50, date: '2024-12-10' },
-      ],
-    },
-    {
-      name: 'Physics',
-      color: 'bg-purple-50 text-purple-600',
-      results: [
-        { testName: 'Mechanics Final', marksObtained: 75, totalMarks: 100, date: '2024-12-18' },
-        { testName: 'Quantum Physics Quiz', marksObtained: 38, totalMarks: 50, date: '2024-12-05' },
-      ],
-    },
-    {
-      name: 'Chemistry',
-      color: 'bg-green-50 text-green-600',
-      results: [
-        { testName: 'Organic Chemistry', marksObtained: 88, totalMarks: 100, date: '2024-12-20' },
-        { testName: 'Inorganic Quiz', marksObtained: 42, totalMarks: 50, date: '2024-12-12' },
-      ],
-    },
-    {
-      name: 'English',
-      color: 'bg-orange-50 text-orange-600',
-      results: [
-        { testName: 'Grammar Test', marksObtained: 92, totalMarks: 100, date: '2024-12-14' },
-        { testName: 'Literature Quiz', marksObtained: 47, totalMarks: 50, date: '2024-12-08' },
-      ],
-    },
-  ];
+  // Deterministic color choices for subjects
+  const subjectColorFor = (name) => {
+    const palette = [
+      'bg-blue-50 text-blue-600',
+      'bg-purple-50 text-purple-600',
+      'bg-green-50 text-green-600',
+      'bg-orange-50 text-orange-600',
+      'bg-pink-50 text-pink-600',
+      'bg-amber-50 text-amber-600',
+      'bg-cyan-50 text-cyan-600',
+    ];
+    const idx = Math.abs((name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % palette.length;
+    return palette[idx];
+  };
+
+  useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const studentId = localStorage.getItem('studentId');
+        if (!studentId) {
+          setError('Missing student session. Please login again.');
+          setLoading(false);
+          return;
+        }
+
+        const res = await axios.get(`http://localhost:5000/api/quiz-results/student/${studentId}`);
+        const rows = res.data?.results || [];
+
+        // Group by subject -> tests
+        const bySubject = new Map();
+        rows.forEach(r => {
+          const key = r.subjectName || 'Unknown Subject';
+          if (!bySubject.has(key)) {
+            bySubject.set(key, {
+              name: key,
+              color: subjectColorFor(key),
+              results: [],
+            });
+          }
+          bySubject.get(key).results.push({
+            testName: r.testName,
+            marksObtained: r.obtainedMarks,
+            totalMarks: r.totalPossibleMarks,
+            date: r.createdAt,
+          });
+        });
+
+        // Within each subject, latest first
+        const subjectsArr = Array.from(bySubject.values()).map(s => ({
+          ...s,
+          results: s.results.sort((a, b) => new Date(b.date) - new Date(a.date))
+        }));
+
+        setSubjects(subjectsArr);
+      } catch (e) {
+        console.error('Failed to fetch student results', e);
+        setError(e.response?.data?.error || 'Failed to load results');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResults();
+  }, []);
 
   return (
     <div>
-      {!selectedSubject ? (
+      {loading ? (
+        <div className="text-gray-600">Loading results...</div>
+      ) : error ? (
+        <div className="text-red-600">{error}</div>
+      ) : !selectedSubject ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+          {subjects.length === 0 && (
+            <div className="col-span-1 sm:col-span-2 text-gray-600">No results yet.</div>
+          )}
           {subjects.map((subject) => (
             <button
               key={subject.name}
@@ -53,12 +96,18 @@ const ResultSection = () => {
                 <div>
                   <h3 className="text-base md:text-lg font-semibold">{subject.name}</h3>
                   <p className="text-gray-600 mt-1 text-sm md:text-base">
-                    Latest score: {subject.results[0].marksObtained}/{subject.results[0].totalMarks}
+                    {subject.results?.length > 0 ? (
+                      <>Latest score: {subject.results[0].marksObtained}/{subject.results[0].totalMarks}</>
+                    ) : (
+                      'No tests yet'
+                    )}
                   </p>
                 </div>
-                <span className={`rounded-full px-3 py-1 text-sm mt-2 sm:mt-0 ${subject.color}`}>
-                  {((subject.results[0].marksObtained / subject.results[0].totalMarks) * 100).toFixed(0)}%
-                </span>
+                {subject.results?.length > 0 && (
+                  <span className={`rounded-full px-3 py-1 text-sm mt-2 sm:mt-0 ${subject.color}`}>
+                    {((subject.results[0].marksObtained / subject.results[0].totalMarks) * 100).toFixed(0)}%
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-1 text-emerald-600 mt-4 text-sm">
                 View details

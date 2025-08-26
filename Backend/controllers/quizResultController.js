@@ -284,4 +284,45 @@ const getResultSummary = async (req, res) => {
 module.exports = {
   submitQuizResult,
   getResultSummary,
+  // Fetch all results for a student, enriched with quiz details
+  getStudentResults,
 };
+
+// GET: all results for a student (with subject & test names)
+async function getStudentResults(req, res) {
+    try {
+        const { studentId } = req.params;
+        if (!studentId) {
+            return res.status(400).json({ error: 'studentId is required' });
+        }
+
+        // Populate quiz to access subject/test names and questions (to compute total possible marks)
+        const results = await QuizResult.find({ studentId })
+            .populate({ path: 'quizId', select: 'basicDetails questions' })
+            .sort({ createdAt: -1 });
+
+        const payload = results.map((r) => {
+            const quiz = r.quizId;
+            const subjectName = quiz?.basicDetails?.subjectName || 'Unknown Subject';
+            const testName = quiz?.basicDetails?.testName || 'Untitled Test';
+            const totalPossibleMarks = Array.isArray(quiz?.questions)
+                ? quiz.questions.reduce((s, q) => s + (q.marks || 0), 0)
+                : 0;
+            return {
+                id: r._id,
+                quizId: quiz?._id,
+                teacherId: r.teacherId,
+                subjectName,
+                testName,
+                obtainedMarks: r.totalMarks || 0,
+                totalPossibleMarks,
+                createdAt: r.createdAt,
+            };
+        });
+
+        return res.json({ results: payload });
+    } catch (error) {
+        console.error('❌ Error fetching student results:', error);
+        return res.status(500).json({ error: 'Server error fetching student results' });
+    }
+}
