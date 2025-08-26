@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import studentImage from './photos/Student_Endroll.jpg';
 import Default_Test from './photos/Default_Test.png';
 import Test from './photos/test.jpg';
+import Medha from './photos/Medha.jpg';
+import amee from './photos/amee.jpg';
 import { 
   BookOpen, 
   Users, 
@@ -62,16 +64,16 @@ const LandingPage = ({ onLogin }) => {
       image: "https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=300"
     },
     {
-      name: "Michael Torres",
+      name: "Medha Raina",
       role: "Full Stack Developer",
       description: "Integrated frontend and backend systems",
-      image: "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=300"
+      image: Medha,
     },
     {
-      name: "Emily Davis",
+      name: "Amee Panchal",
       role: "UI/UX Designer",
       description: "Created user experience and visual designs",
-      image: "https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=300"
+      image: amee
     }
   ];
 

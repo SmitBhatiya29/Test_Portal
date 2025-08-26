@@ -20,6 +20,9 @@ const express = require('express');
     // Protected route: Get quizzes assigned to student
     router.get('/quizzes', authenticateStudent, quizController.getAssignedQuizzes);
 
+    // Protected route: Get quizzes created by student's teacher (fallback for planner)
+    router.get('/quizzes/by-teacher', authenticateStudent, quizController.getStudentQuizzes);
+
     // Delete students by databaseName and teacherId
 
 
