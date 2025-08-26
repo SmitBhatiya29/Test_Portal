@@ -14,4 +14,5 @@ router.get('/summary/:quizId/:studentId', quizResultController.getResultSummary)
 // GET - all results for a student
 router.get('/student/:studentId', quizResultController.getStudentResults);
 
+
 module.exports = router;

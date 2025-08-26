@@ -12,6 +12,7 @@ const submitQuizResult = async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+
         // ✅ Load quiz to get authoritative question definitions
         const quizDoc = await Quiz.findById(quizId);
         if (!quizDoc) {
@@ -308,6 +309,23 @@ async function getStudentResults(req, res) {
             const totalPossibleMarks = Array.isArray(quiz?.questions)
                 ? quiz.questions.reduce((s, q) => s + (q.marks || 0), 0)
                 : 0;
+
+            const totalQuestions = Array.isArray(r.answers) ? r.answers.length : 0;
+            const totalCorrect = Array.isArray(r.answers)
+                ? r.answers.filter(a => (a?.marksAwarded || 0) > 0).length
+                : 0;
+
+            const counts = {
+                easy: Array.isArray(r.easyQuestions) ? r.easyQuestions.length : 0,
+                medium: Array.isArray(r.mediumQuestions) ? r.mediumQuestions.length : 0,
+                hard: Array.isArray(r.hardQuestions) ? r.hardQuestions.length : 0,
+            };
+            const correctCounts = {
+                easy: Array.isArray(r.easyQuestions) ? r.easyQuestions.filter(a => (a?.marksAwarded || 0) > 0).length : 0,
+                medium: Array.isArray(r.mediumQuestions) ? r.mediumQuestions.filter(a => (a?.marksAwarded || 0) > 0).length : 0,
+                hard: Array.isArray(r.hardQuestions) ? r.hardQuestions.filter(a => (a?.marksAwarded || 0) > 0).length : 0,
+            };
+
             return {
                 id: r._id,
                 quizId: quiz?._id,
@@ -316,6 +334,10 @@ async function getStudentResults(req, res) {
                 testName,
                 obtainedMarks: r.totalMarks || 0,
                 totalPossibleMarks,
+                totalQuestions,
+                totalCorrect,
+                counts,
+                correctCounts,
                 createdAt: r.createdAt,
             };
         });
