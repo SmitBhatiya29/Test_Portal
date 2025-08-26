@@ -19,4 +19,11 @@ router.get('/quizzes', authenticateTeacher, require('../controllers/quizControll
 // Update Teacher Profile
 router.put('/profile', authenticateTeacher, teacherController.updateProfile);
 
+// Teacher Analytics
+router.get(
+  '/analytics/overview',
+  authenticateTeacher,
+  require('../controllers/analyticsController').getTeacherAnalyticsOverview
+);
+
 module.exports = router;

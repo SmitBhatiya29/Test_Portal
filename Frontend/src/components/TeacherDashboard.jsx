@@ -9,6 +9,7 @@ import HelpSupport from './HelpSupport';
 import Respondent from './Respondents';
 import DefaultTests from './DefaultTests'; // ✅ Make sure this file exists
 import axios from 'axios';
+import TeacherAnalytics from './TeacherAnalytics';
 
 const TeacherDashboard = ({ onLogout }) => {
   const [currentView, setCurrentView] = useState('tests');
@@ -105,6 +106,8 @@ const TeacherDashboard = ({ onLogout }) => {
             onCreateQuiz={handleCreateQuiz}
           />
         );
+      case 'analytics':
+        return <TeacherAnalytics />;
       case 'tests':
         return (
           <QuizList

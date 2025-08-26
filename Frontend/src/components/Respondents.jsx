@@ -94,7 +94,7 @@ const Respondents = ({ teacherId: propTeacherId }) => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <Users className="w-8 h-8 text-blue-600" />
@@ -185,90 +185,96 @@ const Respondents = ({ teacherId: propTeacherId }) => {
               </select>
             </div>
 
-            <button className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors w-full sm:w-auto">
               <Download className="w-4 h-4" />
               <span>Export</span>
             </button>
           </div>
         </div>
 
-        {/* Results Table */}
+        {/* Results - Responsive */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="p-6 text-center text-gray-500">Loading...</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Student
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Quiz
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Score
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Completed At
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredResults.map((result) => (
-                    <tr key={result._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {result.studentName}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {result.studentEmail}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {result.quizName}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getScoreColor(
-                            result.score || 0
-                          )}`}
-                        >
-                          {result.score || 0}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(result.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-blue-600 hover:text-blue-900 flex items-center space-x-1">
-                          <Eye className="w-4 h-4" />
-                          <span>View Details</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredResults.length === 0 && (
+            <>
+              {/* Table for md+ */}
+              <div className="overflow-x-auto hidden md:block">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <td
-                        colSpan="5"
-                        className="px-6 py-4 text-center text-gray-500"
-                      >
-                        No responses found
-                      </td>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quiz</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completed At</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredResults.map((result) => (
+                      <tr key={result._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 truncate max-w-[240px]">{result.studentName}</div>
+                            <div className="text-sm text-gray-500 truncate max-w-[260px]">{result.studentEmail}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900 truncate max-w-[240px]">{result.quizName}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getScoreColor(result.score || 0)}`}>
+                            {result.score || 0}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(result.createdAt)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button className="text-blue-600 hover:text-blue-900 flex items-center space-x-1">
+                            <Eye className="w-4 h-4" />
+                            <span>View Details</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredResults.length === 0 && (
+                      <tr>
+                        <td colSpan="5" className="px-6 py-4 text-center text-gray-500">No responses found</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Cards for < md */}
+              <div className="md:hidden divide-y divide-gray-100">
+                {filteredResults.map((result) => (
+                  <div key={result._id} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{result.studentName}</p>
+                        <p className="text-xs text-gray-500 truncate">{result.studentEmail}</p>
+                      </div>
+                      <span className={`ml-3 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getScoreColor(result.score || 0)}`}>
+                        {result.score || 0}
+                      </span>
+                    </div>
+                    <div className="mt-2 text-sm text-gray-700">
+                      <div className="truncate"><span className="text-gray-500">Quiz:</span> {result.quizName}</div>
+                      <div className="text-gray-500">{formatDate(result.createdAt)}</div>
+                    </div>
+                    <div className="mt-3">
+                      <button className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg">
+                        <Eye className="w-4 h-4" />
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {filteredResults.length === 0 && (
+                  <div className="p-6 text-center text-gray-500">No responses found</div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>

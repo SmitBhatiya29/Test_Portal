@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types';
-import { LayoutGrid, Users, Database, Settings, HelpCircle, LogOut } from 'lucide-react';
+import { LayoutGrid, Users, Database, Settings, HelpCircle, LogOut, BarChart3 } from 'lucide-react';
 
 const Sidebar = ({ onLogout, onNavigate, currentView }) => {
   const menuItems = [
     { icon: <LayoutGrid size={20} />, label: 'My Tests', id: 'tests' },
+    { icon: <BarChart3 size={20} />, label: 'Analytics', id: 'analytics' },
     { icon: <Users size={20} />, label: 'Respondents', id: 'respondents' },
     { icon: <Database size={20} />, label: 'Results database', id: 'results' },
     { icon: <Settings size={20} />, label: 'My account', id: 'account' },
