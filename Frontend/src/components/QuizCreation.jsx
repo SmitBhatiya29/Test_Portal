@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import axios from "axios";
+import AIAssistant from './AIAssistant';
 
 const QuizCreation = ({ onSave, chapters = [] }) => {
   const [questions, setQuestions] = useState([
@@ -226,6 +227,9 @@ const QuizCreation = ({ onSave, chapters = [] }) => {
           Create Test
         </button>
       </div>
+
+      {/* AI Assistant Component */}
+      <AIAssistant />
     </div>
   );
 };

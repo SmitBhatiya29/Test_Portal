@@ -4,6 +4,8 @@ import Default_Test from './photos/Default_Test.png';
 import Test from './photos/test.jpg';
 import Medha from './photos/Medha.jpg';
 import amee from './photos/amee.jpg';
+import anju from './photos/anju.jpg';
+import smit from './photos/smit3.jpg';
 import { 
   BookOpen, 
   Users, 
@@ -50,32 +52,33 @@ const LandingPage = ({ onLogin }) => {
     }
   ];
 
-  const teamMembers = [
-    {
-      name: "Alex Johnson",
-      role: "Frontend Developer",
-      description: "Led the UI/UX design and React implementation",
-      image: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=300"
-    },
-    {
-      name: "Sarah Chen",
-      role: "Backend Developer",
-      description: "Designed database architecture and API endpoints",
-      image: "https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=300"
-    },
-    {
-      name: "Medha Raina",
-      role: "Full Stack Developer",
-      description: "Integrated frontend and backend systems",
-      image: Medha,
-    },
-    {
-      name: "Amee Panchal",
-      role: "UI/UX Designer",
-      description: "Created user experience and visual designs",
-      image: amee
-    }
-  ];
+const teamMembers = [
+  {
+    name: "Smit Bhatiya",
+    role: "Full Stack Developer (Project Leader)",
+    description: "Led the project, integrated frontend and backend systems",
+    image: smit
+  },
+  {
+    name: "Anju Swami",
+    role: "Backend Developer & Database Designer",
+    description: "Designed database architecture and developed backend APIs",
+    image: anju
+  },
+  {
+    name: "Medha Raina",
+    role: "Frontend Developer",
+    description: "Implemented responsive and interactive frontend features",
+    image: Medha,
+  },
+  {
+    name: "Amee Panchal",
+    role: "UI/UX Designer",
+    description: "Created intuitive user experience and visual designs",
+    image: amee
+  }
+];
+
 
   if (showLogin) {
     return (
