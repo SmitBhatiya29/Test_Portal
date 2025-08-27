@@ -16,8 +16,14 @@ const StudentSidebar = ({ currentSection, onSectionChange, onLogout }) => {
 
   return (
     <div className="w-64 bg-white h-screen flex flex-col border-r sticky top-0">
-      <div className="p-4 flex items-center justify-between">
-        <img src="/logo.svg" alt="TestPortal" className="h-6 md:h-8" />
+      <div className="p-4 flex items-center gap-3">
+        <div className="p-2 rounded-md bg-emerald-100 text-emerald-600">
+          <BookOpen size={28} />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-lg font-bold">Quizemaster</span>
+          <span className="text-xs text-gray-500">Assessment Suite</span>
+        </div>
       </div>
       
       <nav className="flex-1 px-2 md:px-4 py-2 overflow-y-auto">

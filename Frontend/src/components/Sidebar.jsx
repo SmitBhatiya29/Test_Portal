@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { LayoutGrid, Users, Database, Settings, HelpCircle, LogOut, BarChart3 } from 'lucide-react';
+import { LayoutGrid, Users, Database, Settings, HelpCircle, LogOut, BarChart3, BookOpen } from 'lucide-react';
 
 const Sidebar = ({ onLogout, onNavigate, currentView }) => {
   const menuItems = [
@@ -17,8 +17,14 @@ const Sidebar = ({ onLogout, onNavigate, currentView }) => {
 
   return (
     <div className="w-64 bg-white h-screen flex flex-col border-r fixed">
-      <div className="p-4">
-        <img src="/logo.svg" alt="TestPortal" className="h-8" />
+      <div className="p-4 flex items-center gap-3">
+        <div className="p-2 rounded-md bg-emerald-100 text-emerald-600">
+          <BookOpen size={28} />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-lg font-bold">Quizemaster</span>
+          <span className="text-xs text-gray-500">Assessment Suite</span>
+        </div>
       </div>
       
       <nav className="flex-1 px-4 py-2 overflow-y-auto">

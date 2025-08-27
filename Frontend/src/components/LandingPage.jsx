@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import studentImage from './photos/Student_Endroll.jpg';
 import Default_Test from './photos/Default_Test.png';
-import Test from './photos/test.jpg';
+import Test from './photos/test.png';
 import Medha from './photos/Medha.jpg';
 import amee from './photos/amee.jpg';
 import anju from './photos/anju.jpg';
 import smit from './photos/smit3.jpg';
+import Dashboard from './photos/Dashboard.png';
 import { 
   BookOpen, 
   Users, 
@@ -48,7 +49,7 @@ const LandingPage = ({ onLogin }) => {
       icon: PieChart,
       title: "Performance Analytics",
       description: "Comprehensive dashboards provide detailed insights into student performance, identifying strengths and areas for improvement.",
-      image: "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=400"
+      image: Dashboard
     }
   ];
 
